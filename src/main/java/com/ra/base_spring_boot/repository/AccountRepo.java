@@ -9,9 +9,14 @@ import java.util.Optional;
 
 public interface AccountRepo extends JpaRepository<Account,Long> {
     @Query("""
-   select distinct a from Account a
-   left join fetch a.role r
-   where a.email = :email
-""")
+       select distinct a from Account a
+       left join fetch a.role r
+       where a.email = :email
+    """)
     Optional<Account> findByEmailWithRoles(@Param("email") String email);
+
+    boolean existsByUserName(String userName);
+    boolean existsByEmail(String email);
+
+    Optional<Account> findByEmail(String email);
 }

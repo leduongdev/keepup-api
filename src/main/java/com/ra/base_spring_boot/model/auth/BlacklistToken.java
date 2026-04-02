@@ -22,5 +22,5 @@ public class BlacklistToken extends BaseObject {
     private String token;
 
     @Column(nullable = false)
-    private LocalDateTime expiryDate;
+    private LocalDateTime expiredDate;
 }

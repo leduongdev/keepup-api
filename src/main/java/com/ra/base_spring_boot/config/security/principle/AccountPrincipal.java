@@ -57,5 +57,6 @@ public class AccountPrincipal implements UserDetails {
     public Long getId() { return account.getId(); }
     public String getFullName() { return account.getProfile() != null ? account.getProfile().getFullName() : null; }
     public String getEmail() { return account.getEmail(); }
+    public String getAvatarUrl() { return account.getProfile() != null ? account.getProfile().getAvatarUrl() : null; }
     public String getPhone() { return account.getProfile() != null ? account.getProfile().getPhone() : null; }
 }

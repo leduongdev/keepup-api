@@ -1,15 +1,11 @@
 package com.ra.base_spring_boot.model;
 
-
-
+import com.ra.base_spring_boot.model.base.BaseObject;
 import com.ra.base_spring_boot.model.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(
@@ -21,12 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Role {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class Role extends BaseObject {
     @Enumerated(EnumType.STRING)
     @Column(name = "role_name", nullable = false)
     private RoleName roleName;
