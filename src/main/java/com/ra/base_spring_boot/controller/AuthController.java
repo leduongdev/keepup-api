@@ -1,7 +1,7 @@
 package com.ra.base_spring_boot.controller;
 
-import com.ra.base_spring_boot.dto.request.UserLogin;
-import com.ra.base_spring_boot.dto.request.UserRequest;
+import com.ra.base_spring_boot.dto.request.UserLoginRequest;
+import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.dto.response.JWTResponse;
 import com.ra.base_spring_boot.model.Account;
@@ -23,18 +23,18 @@ public class AuthController {
     private final AccountService accountService;
 
     @PostMapping("/register")
-    @Operation(summary = "Đăng ký tài khoản")
-    public ResponseEntity<ApiResponse<Account>> registerAccount(@Valid @RequestBody UserRequest userRequest) {
-        Account newAccount = accountService.register(userRequest);
+    @Operation(summary = "Register account")
+    public ResponseEntity<ApiResponse<Account>> registerAccount(@Valid @RequestBody UserRegisterRequest userRegisterRequest) {
+        Account newAccount = accountService.register(userRegisterRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(newAccount, "Đăng ký tài khoản thành công"));
+                .body(ApiResponse.success(newAccount, "Register successfully!"));
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Đăng nhâập tài khoản")
-    public ResponseEntity<ApiResponse<JWTResponse>> login(@Valid @RequestBody UserLogin userLogin) {
-        JWTResponse login = accountService.login(userLogin);
+    @Operation(summary = "Login account")
+    public ResponseEntity<ApiResponse<JWTResponse>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
+        JWTResponse login = accountService.login(userLoginRequest);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponse.success(login, "Đăng nhập thành công"));
+                .body(ApiResponse.success(login, "Login successfully!"));
     }
 }

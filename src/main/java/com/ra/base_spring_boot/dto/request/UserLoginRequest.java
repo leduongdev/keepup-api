@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class UserLogin {
-    @NotBlank(message = "Email không được để trống!")
+public class UserLoginRequest {
+    @NotBlank(message = "Email cannot be blank")
     private String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống!")
+    @NotBlank(message = "Password cannot be blank")
     private String password;
 }

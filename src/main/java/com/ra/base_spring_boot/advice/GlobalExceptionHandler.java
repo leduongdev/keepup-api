@@ -145,7 +145,6 @@ public class GlobalExceptionHandler {
         response.setData(null);
 
         response.setErrors(List.of(Map.of(
-                "code", String.valueOf(errorCode.getCode()),
                 "message", errorCode.getMessage()
         )));
         response.setTimestamp(LocalDateTime.now());
