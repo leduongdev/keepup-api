@@ -1,13 +1,16 @@
 package com.ra.base_spring_boot.model.base;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDateTime;
 
 @MappedSuperclass
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class BaseObject {
 
     @Id
@@ -25,6 +28,14 @@ public abstract class BaseObject {
 
     @Override
     public int hashCode() {
-        return 31; // tránh đổi hash khi id còn null
+        return 31;
     }
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

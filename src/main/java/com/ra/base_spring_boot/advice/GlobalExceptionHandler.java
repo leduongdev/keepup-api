@@ -2,8 +2,10 @@ package com.ra.base_spring_boot.advice;
 
 
 import com.ra.base_spring_boot.dto.response.ApiResponse;
+import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.exception.BadRequestException;
 import com.ra.base_spring_boot.exception.ForbiddenException;
+import com.ra.base_spring_boot.model.enums.ErrorCode;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -131,5 +133,22 @@ public class GlobalExceptionHandler {
         )));
         res.setTimestamp(LocalDateTime.now());
         return ResponseEntity.badRequest().body(res);
+    }
+
+    @ExceptionHandler(AppException.class)
+    public ResponseEntity<ApiResponse<Object>> handleAppException(AppException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+
+        ApiResponse<Object> response = new ApiResponse<>();
+        response.setSuccess(false);
+        response.setMessage(errorCode.getMessage());
+        response.setData(null);
+
+        response.setErrors(List.of(Map.of(
+                "message", errorCode.getMessage()
+        )));
+        response.setTimestamp(LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }

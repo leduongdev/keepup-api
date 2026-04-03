@@ -3,17 +3,17 @@ package com.ra.base_spring_boot.model;
 import com.ra.base_spring_boot.model.base.BaseObject;
 import com.ra.base_spring_boot.model.enums.Gender;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "user_profile")
-@Getter
-@Setter
 @EqualsAndHashCode(callSuper = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class UserProfile extends BaseObject {
 
     @Column(name = "full_name", nullable = false, length = 100)

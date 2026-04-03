@@ -5,22 +5,19 @@ import com.ra.base_spring_boot.model.base.BaseObject;
 import com.ra.base_spring_boot.model.enums.AccountStatus;
 import com.ra.base_spring_boot.model.enums.AuthProvider;
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import lombok.*;
 
 @Entity
 @Table(name = "account")
-@Getter
-@Setter
+@Data
 @EqualsAndHashCode(callSuper = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Account extends BaseObject {
+    @Column(name = "user_name", nullable = false, length = 100)
+    private String userName;
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -45,13 +42,6 @@ public class Account extends BaseObject {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified;
 }
