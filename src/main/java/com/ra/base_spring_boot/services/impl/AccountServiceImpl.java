@@ -9,10 +9,7 @@ import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.Role;
 import com.ra.base_spring_boot.model.UserProfile;
-import com.ra.base_spring_boot.model.enums.AccountStatus;
-import com.ra.base_spring_boot.model.enums.AuthProvider;
-import com.ra.base_spring_boot.model.enums.ErrorCode;
-import com.ra.base_spring_boot.model.enums.RoleName;
+import com.ra.base_spring_boot.model.enums.*;
 import com.ra.base_spring_boot.repository.AccountRepo;
 import com.ra.base_spring_boot.repository.RoleRepo;
 import com.ra.base_spring_boot.services.AccountService;
@@ -62,6 +59,8 @@ public class AccountServiceImpl implements AccountService {
         UserProfile profile = UserProfile.builder()
                 .fullName(userRegisterRequest.getFullName())
                 .avatarUrl("https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg")
+                .gender(userRegisterRequest.getGender())
+                .dateOfBirth(userRegisterRequest.getDateOfBirth())
                 .build();
 
         Account account = Account.builder()
@@ -99,6 +98,8 @@ public class AccountServiceImpl implements AccountService {
                     .fullName(principal.getFullName())
                     .phone(principal.getPhone())
                     .avatarUrl(principal.getAvatarUrl())
+                    .gender(principal.isGender())
+                    .dateOfBirth(principal.getDateOfBirth())
                     .authorities(principal.getAuthorities())
                     .accessToken(accessToken)
                     .build();

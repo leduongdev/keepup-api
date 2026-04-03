@@ -1,11 +1,13 @@
 package com.ra.base_spring_boot.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ra.base_spring_boot.model.enums.Gender;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,14 @@ public class UserRegisterRequest {
 
     @NotBlank(message = "Full name cannot be blank")
     private String fullName;
+
+    @NotNull(message = "Please select your gender.")
+    private Gender gender;
+
+    @NotNull(message = "Please enter your birthday.")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Past(message = "Birthday must be a past date")
+    private LocalDate dateOfBirth;
 
     @NotBlank(message = "Email cannot be blank")
     @Email(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$", message = "Invalid email format!")
