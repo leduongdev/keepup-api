@@ -1,5 +1,6 @@
 package com.ra.base_spring_boot.controller;
 
+import com.ra.base_spring_boot.config.security.APIConfig;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
 import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping(APIConfig.AUTH)
 @RequiredArgsConstructor
 public class AuthController {
     private final AccountService accountService;

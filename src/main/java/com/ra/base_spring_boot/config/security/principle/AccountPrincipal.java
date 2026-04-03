@@ -4,6 +4,7 @@ package com.ra.base_spring_boot.config.security.principle;
 import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.Role;
 import com.ra.base_spring_boot.model.enums.AccountStatus;
+import com.ra.base_spring_boot.model.enums.Gender;
 import com.ra.base_spring_boot.model.enums.RoleName;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -58,5 +60,9 @@ public class AccountPrincipal implements UserDetails {
     public String getFullName() { return account.getProfile() != null ? account.getProfile().getFullName() : null; }
     public String getEmail() { return account.getEmail(); }
     public String getAvatarUrl() { return account.getProfile() != null ? account.getProfile().getAvatarUrl() : null; }
+    public Gender isGender () {
+        return account.getProfile() != null ? account.getProfile().getGender() : null;
+    }
+    public LocalDate getDateOfBirth() { return account.getProfile() != null ? account.getProfile().getDateOfBirth() : null; }
     public String getPhone() { return account.getProfile() != null ? account.getProfile().getPhone() : null; }
 }
