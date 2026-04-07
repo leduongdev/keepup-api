@@ -20,10 +20,12 @@ public class JWTResponse {
     private Gender gender;
     private LocalDate dateOfBirth;
     private String phone;
+    private String address;
     private Collection<? extends GrantedAuthority> authorities;
     private String accessToken;
+    private String refreshToken;
 
-    public JWTResponse(Long id, String email, String fullName, String avatarUrl, Gender gender, LocalDate dateOfBirth, String phone, Collection<? extends GrantedAuthority> authorities, String accessToken) {
+    public JWTResponse(Long id, String email, String fullName, String avatarUrl, Gender gender, LocalDate dateOfBirth, String phone, String address, Collection<? extends GrantedAuthority> authorities, String accessToken, String refreshToken) {
         this.id = id;
         this.email = email;
         this.fullName = fullName;
@@ -31,7 +33,9 @@ public class JWTResponse {
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.phone = phone;
+        this.address = address;
         this.authorities = authorities;
         this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }

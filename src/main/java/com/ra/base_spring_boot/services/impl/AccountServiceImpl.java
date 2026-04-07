@@ -13,7 +13,9 @@ import com.ra.base_spring_boot.model.enums.*;
 import com.ra.base_spring_boot.repository.AccountRepo;
 import com.ra.base_spring_boot.repository.RoleRepo;
 import com.ra.base_spring_boot.services.AccountService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ra.base_spring_boot.services.VerificationService;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,21 +26,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-    @Autowired
-    private AccountRepo accountRepo;
-
-    @Autowired
-    private RoleRepo roleRepo;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtTokenProvider jwtTokenProvider;
+    private final AccountRepo accountRepo;
+    private final RoleRepo roleRepo;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final EmailService emailService;
+    private final VerificationService verificationService;
 
     @Override
     public Account register(UserRegisterRequest userRegisterRequest) {
@@ -70,10 +66,31 @@ public class AccountServiceImpl implements AccountService {
                 .role(defaultRole)
                 .profile(profile)
                 .authProvider(AuthProvider.LOCAL)
-                .status(AccountStatus.ACTIVE)
+                .status(AccountStatus.INACTIVE)
                 .isEmailVerified(false)
                 .build();
-        return accountRepo.save(account);
+
+        Account savedAccount = accountRepo.save(account);
+        // 3. Tạo Token xác thực lưu vào DB
+        String token = verificationService.createVerificationToken(savedAccount, VerificationType.VERIFY_EMAIL);
+
+        // 4. Gửi Email xác thực
+        try {
+            // Tạo link dẫn tới API xác thực của bạn
+            String verifyLink = "http://localhost:8080/api/v1/auth/verify-registration?token=" + token;
+
+            String content = "<h3>Chào " + savedAccount.getUserName() + ",</h3>" +
+                    "<p>Cảm ơn bạn đã đăng ký tài khoản tại Keep Up.</p>" +
+                    "<p>Vui lòng nhấn vào nút bên dưới để kích hoạt tài khoản của bạn:</p>" +
+                    "<a href='" + verifyLink + "' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>KÍCH HOẠT TÀI KHOẢN</a>" +
+                    "<p>Link này sẽ hết hạn sau 24 giờ.</p>";
+
+            emailService.sendHtmlMail(savedAccount.getEmail(), "Xác thực tài khoản của bạn", content);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
+
+        return savedAccount;
     }
 
     @Override
@@ -90,7 +107,8 @@ public class AccountServiceImpl implements AccountService {
 
             AccountPrincipal principal = (AccountPrincipal) authentication.getPrincipal();
 
-            String accessToken = jwtTokenProvider.generateToken(principal);
+            String accessToken = jwtTokenProvider.generateAccessToken(principal);
+            String refreshToken = jwtTokenProvider.generateRefreshToken(principal);
 
             return JWTResponse.builder()
                     .id(principal.getId())
@@ -102,6 +120,7 @@ public class AccountServiceImpl implements AccountService {
                     .dateOfBirth(principal.getDateOfBirth())
                     .authorities(principal.getAuthorities())
                     .accessToken(accessToken)
+                    .refreshToken(refreshToken)
                     .build();
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL);

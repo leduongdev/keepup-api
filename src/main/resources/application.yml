@@ -17,11 +17,24 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huyhoangcs2611@gmail.com
+    password: ywfa ovly irbf gzcp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 
 jwt:
   secret:
     key: Ascmkkqdnmsdfrtgsyuhidj21ue120938219321ndsad
   expired:
-    access: 864000
+    access: 3600000        # 1 giờ = 60 * 60 * 1000
+    refresh: 86400000     # 1 ngày = 7 * 24 * 60 * 60 * 1000
 
 

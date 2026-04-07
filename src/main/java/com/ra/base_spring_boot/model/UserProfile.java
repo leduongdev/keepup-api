@@ -19,7 +19,7 @@ public class UserProfile extends BaseObject {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(unique = true, length = 11)
+    @Column(name = "phone", unique = true, length = 11)
     private String phone;
 
     @Column(name = "avatar_url", columnDefinition = "TEXT")
@@ -29,6 +29,9 @@ public class UserProfile extends BaseObject {
     @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "date_of_birth")
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
+
+    @Column(name = "address")
+    private String address;
 }
