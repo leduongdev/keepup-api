@@ -1,6 +1,6 @@
 package com.ra.base_spring_boot.model;
 
-import com.ra.base_spring_boot.model.base.BaseObject;
+import com.ra.base_spring_boot.model.base.AuditableObject;
 
 import com.ra.base_spring_boot.model.enums.AccountStatus;
 import com.ra.base_spring_boot.model.enums.AuthProvider;
@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Account extends BaseObject {
-    @Column(name = "user_name", nullable = false, length = 100)
+public class Account extends AuditableObject {
+    @Column(name = "user_name", nullable = false, length = 50)
     private String userName;
 
     @Column(nullable = false, unique = true)
@@ -51,8 +51,4 @@ public class Account extends BaseObject {
     @UpdateTimestamp
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

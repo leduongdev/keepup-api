@@ -17,7 +17,7 @@ public class ApiResponse<T> {
     private boolean success;
     private String message;
     private T data;
-    private List<Object> errors;
+    private List<?> errors;
     private LocalDateTime timestamp;
 
     public ApiResponse(T data, String message) {
@@ -28,7 +28,7 @@ public class ApiResponse<T> {
         this.timestamp = LocalDateTime.now();
     }
 
-    public ApiResponse(String message, List<Object> errors) {
+    public ApiResponse(String message, List<?> errors) {
         this.success = false;
         this.message = message;
         this.data = null;

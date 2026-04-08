@@ -1,6 +1,5 @@
 package com.ra.base_spring_boot.controller;
 
-import com.ra.base_spring_boot.config.security.APIConfig;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
 import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
@@ -16,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(APIConfig.AUTH)
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AccountService accountService;
@@ -39,7 +38,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify-registration")
-    @Operation(summary = "Xác thực tài khoản qua Email")
+    @Operation(summary = "Verify account email")
     public ResponseEntity<ApiResponse<String>> verifyRegistration(@RequestParam("token") String token) {
         verificationService.verifyEmail(token);
 
