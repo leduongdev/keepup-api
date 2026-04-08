@@ -6,6 +6,9 @@ import com.ra.base_spring_boot.model.enums.AccountStatus;
 import com.ra.base_spring_boot.model.enums.AuthProvider;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "account")
@@ -44,4 +47,12 @@ public class Account extends BaseObject {
 
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified;
+
+    @UpdateTimestamp
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

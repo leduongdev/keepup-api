@@ -7,6 +7,10 @@ public enum ErrorCode {
     // 1xxx: Auth
     UNAUTHENTICATED("Authentication is required to access this resource"),
     UNAUTHORIZED("You do not have permission to access this resource"),
+    INVALID_TOKEN("Invalid token"),
+    TOKEN_ALREADY_USED("Token already used!"),
+    TOKEN_EXPIRED("Token expired!"),
+    CANNOT_SEND_EMAIL("Cannot send email!"),
 
     // 2xxx: Validation (Regex, NotBlank, etc.)
     INVALID_KEY("Invalid message key"),

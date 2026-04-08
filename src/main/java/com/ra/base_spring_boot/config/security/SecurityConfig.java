@@ -8,6 +8,7 @@ import com.ra.base_spring_boot.config.security.mes.CustomAccessDeniedHandler;
 import com.ra.base_spring_boot.config.security.mes.CustomAuthenticationEntryPoint;
 import com.ra.base_spring_boot.config.security.principle.CustomAccountDetailsService;
 import com.ra.base_spring_boot.repository.BlacklistTokenRepo;
+import com.ra.base_spring_boot.utils.APIConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,16 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                // auth
-                                "/api/v1/auth/register",
-                                "/api/v1/auth/login",
-                                // swagger
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**"
-                        ).permitAll()
-
+                        .requestMatchers(APIConstants.PUBLIC_WHITELIST).permitAll()
                         .anyRequest().authenticated()
                 )
 
