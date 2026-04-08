@@ -29,7 +29,6 @@ spring:
           starttls:
             enable: true
 
-
 jwt:
   secret:
     key: Ascmkkqdnmsdfrtgsyuhidj21ue120938219321ndsad
