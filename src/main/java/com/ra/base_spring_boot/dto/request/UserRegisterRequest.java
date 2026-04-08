@@ -1,6 +1,7 @@
 package com.ra.base_spring_boot.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.ra.base_spring_boot.utils.CustomDateDeserializer;
 import com.ra.base_spring_boot.model.enums.Gender;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class UserRegisterRequest {
     private Gender gender;
 
     @NotNull(message = "Please enter your birthday.")
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonDeserialize(using = CustomDateDeserializer.class)
     @Past(message = "Birthday must be a past date")
     private LocalDate dateOfBirth;
 

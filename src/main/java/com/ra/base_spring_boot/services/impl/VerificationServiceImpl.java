@@ -33,11 +33,8 @@ public class VerificationServiceImpl implements VerificationService {
 
     @Override
     public VerificationToken validateToken(String token, VerificationType type) {
-        VerificationToken vToken = tokenRepo.findByTokenAndType(token, type);
-
-        if (vToken == null) {
-            throw new AppException(ErrorCode.INVALID_TOKEN);
-        }
+        VerificationToken vToken = tokenRepo.findByTokenAndType(token, type)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
 
         if (vToken.getConsumedAt() != null) {
             throw new AppException(ErrorCode.TOKEN_ALREADY_USED);
@@ -50,7 +47,8 @@ public class VerificationServiceImpl implements VerificationService {
 
     @Override
     public void verifyEmail(String token) {
-        VerificationToken vToken = tokenRepo.findByTokenAndType(token, VerificationType.VERIFY_EMAIL);
+        VerificationToken vToken = tokenRepo.findByTokenAndType(token, VerificationType.VERIFY_EMAIL)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_TOKEN));
 
         Account account = vToken.getAccount();
         account.setStatus(AccountStatus.ACTIVE);
