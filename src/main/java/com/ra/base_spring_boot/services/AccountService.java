@@ -13,4 +13,5 @@ public interface AccountService {
 
     void forgotPassword(String email);
 
+    void resetPassword(String token, NewPasswordRequest newPasswordRequest);
 }
