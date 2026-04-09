@@ -40,7 +40,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(data, message);
     }
 
-    public static <T> ApiResponse<T> fail(String message, List<Object> errors) {
+    public static <T> ApiResponse<T> fail(String message, List<?> errors) {
         return new ApiResponse<>(message, errors);
     }
 }

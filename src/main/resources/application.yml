@@ -35,13 +35,13 @@ spring:
             enable: true
   app:
     server-url: http://localhost:8080
-    api-prefix: ${server.servlet.context-path}
 
 jwt:
   secret:
     key: Ascmkkqdnmsdfrtgsyuhidj21ue120938219321ndsad
   expired:
-    access: 3600000        # 1 giờ = 60 * 60 * 1000
-    refresh: 86400000     # 1 ngày = 7 * 24 * 60 * 60 * 1000
+    token: 3600000
+    access: 1800000        # 1 giờ = 60 * 60 * 1000
+    refresh: 608000000     # 1 ngày = 7 * 24 * 60 * 60 * 1000
 
 

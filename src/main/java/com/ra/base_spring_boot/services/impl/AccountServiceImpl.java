@@ -3,6 +3,7 @@ package com.ra.base_spring_boot.services.impl;
 import com.ra.base_spring_boot.config.security.AppConfig;
 import com.ra.base_spring_boot.config.security.jwt.JwtTokenProvider;
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.dto.request.NewPasswordRequest;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
 import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.JWTResponse;
@@ -10,9 +11,11 @@ import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.Role;
 import com.ra.base_spring_boot.model.UserProfile;
+import com.ra.base_spring_boot.model.VerificationToken;
 import com.ra.base_spring_boot.model.enums.*;
 import com.ra.base_spring_boot.repository.AccountRepo;
 import com.ra.base_spring_boot.repository.RoleRepo;
+import com.ra.base_spring_boot.repository.VerificationTokenRepo;
 import com.ra.base_spring_boot.services.AccountService;
 import com.ra.base_spring_boot.services.EmailService;
 import com.ra.base_spring_boot.services.VerificationService;
@@ -27,6 +30,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -38,6 +43,7 @@ public class AccountServiceImpl implements AccountService {
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
     private final VerificationService verificationService;
+    private final VerificationTokenRepo verificationTokenRepo;
 
     @Override
     public Account register(UserRegisterRequest userRegisterRequest) {
@@ -79,11 +85,11 @@ public class AccountServiceImpl implements AccountService {
         try {
             String verifyLink = appConfig.getFullApiUrl() + "/auth/verify-registration?token=" + token;
 
-            String content = "<h3>Chào " + savedAccount.getUserName() + ",</h3>" +
-                    "<p>Cảm ơn bạn đã đăng ký tài khoản tại Keep Up.</p>" +
-                    "<p>Vui lòng nhấn vào nút bên dưới để kích hoạt tài khoản của bạn:</p>" +
+            String content = "<h3>Dear " + savedAccount.getUserName() + ",</h3>" +
+                    "<p>Thank you for registering an account at Keep Up.</p>" +
+                    "<p>Please click the button below to activate your account.:</p>" +
                     "<a href='" + verifyLink + "' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>KÍCH HOẠT TÀI KHOẢN</a>" +
-                    "<p>Link này sẽ hết hạn sau 24 giờ.</p>";
+                    "<p>This link will expire in 1 hours.</p>";
 
             emailService.sendHtmlMail(savedAccount.getEmail(), "Xác thực tài khoản của bạn", content);
         } catch (MessagingException e) {
@@ -128,4 +134,25 @@ public class AccountServiceImpl implements AccountService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
+
+    @Override
+    public void forgotPassword(String email) {
+        Account optionalAccount = accountRepo.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        try {
+            String token = verificationService.createVerificationToken(optionalAccount, VerificationType.RESET_PASSWORD);
+
+            String resetLink = appConfig.getFullApiUrl() + "/auth/reset-password?token=" + token;
+
+            String content = "<p>You have requested a password reset. Please click the link below:</p>" +
+                    "<a href='" + resetLink + "'>RESET PASSWORD</a>";
+
+            emailService.sendHtmlMail(email, "Password reset request", content);
+        } catch (MessagingException e) {
+            throw new AppException(ErrorCode.CANNOT_SEND_EMAIL);
+        }
+    }
+
+
 }
