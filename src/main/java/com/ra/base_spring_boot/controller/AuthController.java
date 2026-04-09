@@ -53,4 +53,18 @@ public class AuthController {
         accountService.forgotPassword(email);
         return ResponseEntity.ok(ApiResponse.success(null, "The password reset link has been sent to your email."));
     }
+
+    @GetMapping("/reset-password")
+    @Operation(summary = "Verify reset password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestParam("token") String token) {
+        verificationService.validateToken(token, VerificationType.RESET_PASSWORD);
+        return ResponseEntity.ok(ApiResponse.success(token, "Token valid, please enter new password."));
+    }
+
+    @PatchMapping("/reset-password")
+    @Operation(summary = "Reset Password")
+    public ResponseEntity<ApiResponse<String>> resetPassword(@RequestParam String token, @Valid @RequestBody NewPasswordRequest newPasswordRequest) {
+        accountService.resetPassword(token, newPasswordRequest);
+        return ResponseEntity.ok(ApiResponse.success(null, "Password has been successfully changed!"));
+    }
 }

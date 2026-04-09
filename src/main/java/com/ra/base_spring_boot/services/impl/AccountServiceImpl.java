@@ -154,5 +154,15 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
+    @Override
+    public void resetPassword(String token, NewPasswordRequest newPasswordRequest) {
+        VerificationToken verificationToken = verificationService.validateToken(token, VerificationType.RESET_PASSWORD);
 
+        Account account = verificationToken.getAccount();
+        account.setPasswordHash(passwordEncoder.encode(newPasswordRequest.getNewPassword()));
+        accountRepo.save(account);
+
+        verificationToken.setConsumedAt(LocalDateTime.now());
+        verificationTokenRepo.save(verificationToken);
+    }
 }
