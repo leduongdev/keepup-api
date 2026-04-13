@@ -13,7 +13,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,23 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page, size, getSort(sortBy, direction));
 
         return userRepo.findAll(spec, pageable).map(this::convertToDTO);
+    }
+
+    @Override
+    public AccountResponseDTO getStudentById(Long id) {
+        // 1. Tìm user trong DB
+        Account targetUser = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // 2. Lấy user đang đăng nhập
+        Account currentUser = SecurityUtils.getCurrentAccount();
+
+        // 3. PBAC: Hỏi Policy xem có được xem ông này không?
+        if (!userPolicy.canViewDetail(currentUser, targetUser)) {
+            throw new AccessDeniedException("You do not have permission to view this person's information!");
+        }
+
+        return convertToDTO(targetUser);
     }
 
     private AccountResponseDTO convertToDTO(Account account) {

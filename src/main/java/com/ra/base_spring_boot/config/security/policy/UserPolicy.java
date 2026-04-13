@@ -17,6 +17,18 @@ public class UserPolicy {
         return spec;
     }
 
+    public boolean canViewDetail(Account currentUser, Account targetUser) {
+        if (hasRole(currentUser, "ROLE_SUPER_ADMIN")) return true;
+
+        if (currentUser.getId().equals(targetUser.getId())) return true;
+
+        if (hasRole(currentUser, "ROLE_ADMIN")) {
+            return hasRole(targetUser, "ROLE_STUDENT");
+        }
+
+        return false;
+    }
+
     public boolean canDoAction(Account currentUser, String action, Account target) {
         if (hasRole(currentUser, "ROLE_SUPER_ADMIN")) return true;
 
@@ -28,10 +40,20 @@ public class UserPolicy {
     }
 
     private boolean hasRole(Account user, String roleName) {
-        return false;
+        // 1. Kiểm tra an toàn (Null check)
+        if (user == null || user.getRole() == null || user.getRole().getRoleName() == null) {
+            return false;
+        }
+
+        // 2. Lấy giá trị thực tế từ DB và cắt bỏ khoảng trắng thừa (nếu có)
+        String dbRoleName = String.valueOf(user.getRole().getRoleName());
+
+        // 3. So sánh (Dùng equalsIgnoreCase để an toàn hơn với hoa thường)
+        return dbRoleName.equalsIgnoreCase(roleName.trim());
     }
 
+    // SỬA LẠI HÀM NÀY
     private boolean isStudent(Account target) {
-        return false;
+        return hasRole(target, "ROLE_STUDENT");
     }
 }

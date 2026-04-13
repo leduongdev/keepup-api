@@ -5,4 +5,6 @@ import org.springframework.data.domain.Page;
 
 public interface UserService {
     Page<AccountResponseDTO> getStudentList(String search, int page, int size, String sortBy, String direction);
+
+    AccountResponseDTO  getStudentById(Long id);
 }
