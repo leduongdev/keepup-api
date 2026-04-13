@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "blacklist_token")
@@ -22,5 +23,5 @@ public class BlacklistToken extends BaseObject {
     private String token;
 
     @Column(nullable = false)
-    private LocalDateTime expiredDate;
+    private Date expiredDate;
 }
