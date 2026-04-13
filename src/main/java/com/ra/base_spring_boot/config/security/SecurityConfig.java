@@ -3,6 +3,7 @@ package com.ra.base_spring_boot.config.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ra.base_spring_boot.config.security.jwt.JwtAuthFilter;
+import com.ra.base_spring_boot.config.security.jwt.JwtAuthenticationFilter;
 import com.ra.base_spring_boot.config.security.jwt.JwtTokenProvider;
 import com.ra.base_spring_boot.config.security.mes.CustomAccessDeniedHandler;
 import com.ra.base_spring_boot.config.security.mes.CustomAuthenticationEntryPoint;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomAccountDetailsService userDetailsService;
     private final BlacklistTokenRepo blacklistTokenRepo;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, ObjectMapper mapper) throws Exception {
@@ -48,8 +50,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint(mapper))
                         .accessDeniedHandler(new CustomAccessDeniedHandler(mapper))
                 )
-
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,20 +1,25 @@
 package com.ra.base_spring_boot.controller;
 
+import com.ra.base_spring_boot.dto.request.LogoutRequest;
 import com.ra.base_spring_boot.dto.request.NewPasswordRequest;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
 import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.dto.response.JWTResponse;
 import com.ra.base_spring_boot.model.Account;
+import com.ra.base_spring_boot.model.enums.ErrorCode;
 import com.ra.base_spring_boot.model.enums.VerificationType;
 import com.ra.base_spring_boot.services.AccountService;
 import com.ra.base_spring_boot.services.VerificationService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -66,5 +71,19 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestParam String token, @Valid @RequestBody NewPasswordRequest newPasswordRequest) {
         accountService.resetPassword(token, newPasswordRequest);
         return ResponseEntity.ok(ApiResponse.success(null, "Password has been successfully changed!"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+            HttpServletRequest request,
+            @RequestBody LogoutRequest logoutRequest
+    ) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String accessToken = authHeader.substring(7);
+            accountService.logout(accessToken, logoutRequest.getRefreshToken());
+            return ResponseEntity.ok(ApiResponse.success(null, "Logout successfully!"));
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.fail("Invalid token!", List.of()));
     }
 }
