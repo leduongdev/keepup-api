@@ -1,14 +1,12 @@
 package com.ra.base_spring_boot.dto.response;
 
 import com.ra.base_spring_boot.model.enums.AccountStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
 public class AccountResponseDTO {
     private Long id;

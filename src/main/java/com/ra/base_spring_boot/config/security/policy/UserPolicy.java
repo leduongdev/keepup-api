@@ -10,30 +10,30 @@ public class UserPolicy {
     public Specification<Account> getUsersFilter(Account currentUser, String search) {
         Specification<Account> spec = Specification.where(UserSpecs.searchByKeyword(search));
 
-        if (hasRole(currentUser, "ROLE_ADMIN") && !hasRole(currentUser, "ROLE_SUPER_ADMIN")) {
-            spec = spec.and(UserSpecs.hasRole("ROLE_STUDENT"));
+        if (hasRole(currentUser, "ADMIN") && !hasRole(currentUser, "SUPER_ADMIN")) {
+            spec = spec.and(UserSpecs.hasRole("STUDENT"));
         }
 
         return spec;
     }
 
     public boolean canViewDetail(Account currentUser, Account targetUser) {
-        if (hasRole(currentUser, "ROLE_SUPER_ADMIN")) return true;
+        if (hasRole(currentUser, "SUPER_ADMIN")) return true;
 
         if (currentUser.getId().equals(targetUser.getId())) return true;
 
-        if (hasRole(currentUser, "ROLE_ADMIN")) {
-            return hasRole(targetUser, "ROLE_STUDENT");
+        if (hasRole(currentUser, "ADMIN")) {
+            return hasRole(targetUser, "STUDENT");
         }
 
         return false;
     }
 
     public boolean canDoAction(Account currentUser, String action, Account target) {
-        if (hasRole(currentUser, "ROLE_SUPER_ADMIN")) return true;
+        if (hasRole(currentUser, "SUPER_ADMIN")) return true;
 
         return switch (action) {
-            case "CREATE", "UPDATE" -> hasRole(currentUser, "ROLE_ADMIN") && isStudent(target);
+            case "CREATE", "UPDATE" -> hasRole(currentUser, "ADMIN") && isStudent(target);
             case "DELETE" -> false;
             default -> false;
         };
@@ -52,8 +52,7 @@ public class UserPolicy {
         return dbRoleName.equalsIgnoreCase(roleName.trim());
     }
 
-    // SỬA LẠI HÀM NÀY
     private boolean isStudent(Account target) {
-        return hasRole(target, "ROLE_STUDENT");
+        return hasRole(target, "STUDENT");
     }
 }

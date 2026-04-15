@@ -2,6 +2,7 @@ package com.ra.base_spring_boot.config.security.jwt;
 
 
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.repository.AccountRepo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class JwtTokenProvider {
 
     @Value("${jwt.expired.refresh}")
     private long refreshMs;
+
+    private final AccountRepo accountRepo;
 
     // Chuyển chuỗi Secret thành Key chuẩn để ký
     private Key key() {

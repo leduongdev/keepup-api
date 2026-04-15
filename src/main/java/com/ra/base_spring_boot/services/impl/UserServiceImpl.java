@@ -26,18 +26,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<AccountResponseDTO> getStudentList(String search, int page, int size, String sortBy, String direction) {
-        // 1. Lấy thông tin người dùng đang đăng nhập
         Account currentUser = SecurityUtils.getCurrentAccount();
 
         Specification<Account> spec = userPolicy.getUsersFilter(currentUser, search);
 
-        // 2. Áp dụng PBAC Rule:
-        // "Nếu là Admin thông thường, chỉ được phép thấy những Account có role là STUDENT"
-        if (SecurityUtils.hasRole("ROLE_ADMIN") && !SecurityUtils.hasRole("SUPER_ADMIN")) {
-            spec = spec.and(UserSpecs.hasRole("ROLE_STUDENT"));
+        if (SecurityUtils.hasRole("ADMIN") && !SecurityUtils.hasRole("SUPER_ADMIN")) {
+            spec = spec.and(UserSpecs.hasRole("STUDENT"));
         }
 
-        // 3. Thực thi truy vấn linh hoạt
         Pageable pageable = PageRequest.of(page, size, getSort(sortBy, direction));
 
         return userRepo.findAll(spec, pageable).map(this::convertToDTO);

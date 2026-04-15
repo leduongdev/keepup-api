@@ -22,7 +22,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "List users")
-    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('USER_READ_ALL')")
     public ResponseEntity<ApiResponse<PaginationResponse<AccountResponseDTO>>> getStudentList(
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page,
