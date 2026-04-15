@@ -21,10 +21,8 @@ import java.util.List;
 public class AccountPrincipal implements UserDetails {
 
     private final Account account;
-    // Tạo một biến để giữ danh sách quyền, không tính toán lại nhiều lần
     private final Collection<? extends GrantedAuthority> authorities;
 
-    // Sửa Constructor để nhận luôn authorities từ Service truyền vào
     public AccountPrincipal(Account account, Collection<? extends GrantedAuthority> authorities) {
         this.account = account;
         this.authorities = authorities;
@@ -32,7 +30,7 @@ public class AccountPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.authorities; // Trả về biến đã có sẵn, không gọi thêm hàm nào khác
+        return this.authorities;
     }
 
     @Override
@@ -50,13 +48,6 @@ public class AccountPrincipal implements UserDetails {
     public boolean isAccountNonLocked() {
         return account.getStatus() == AccountStatus.ACTIVE;
     }
-
-    public boolean hasRole(RoleName role) {
-        return authorities.stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_" + role.name()));
-    }
-
-
 
     @Override
     public boolean isEnabled() {

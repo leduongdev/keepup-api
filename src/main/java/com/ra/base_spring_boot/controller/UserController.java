@@ -45,7 +45,7 @@ public class UserController {
 
         ApiResponse<PaginationResponse<AccountResponseDTO>> apiResponse = new ApiResponse<>(
             true,
-            "Lấy danh sách người dùng thành công!",
+            "Get a list of successful users!",
             responseData,
             null,
             LocalDateTime.now()
@@ -59,7 +59,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<AccountResponseDTO>> getUser(@PathVariable Long id) {
         return ResponseEntity.ok(new ApiResponse<>(
                 true,
-                "Lấy chi tiết người dùng thành công!",
+                "Retrieve successful user details!",
                 userService.getStudentById(id),
                 null,
                 LocalDateTime.now()
