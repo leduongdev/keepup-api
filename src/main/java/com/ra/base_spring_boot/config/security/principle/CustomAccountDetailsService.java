@@ -1,8 +1,10 @@
 package com.ra.base_spring_boot.config.security.principle;
 
 import com.ra.base_spring_boot.model.Account;
+import com.ra.base_spring_boot.model.enums.AccountStatus;
 import com.ra.base_spring_boot.repository.AccountRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,6 +27,7 @@ public class CustomAccountDetailsService implements UserDetailsService {
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + account.getRole().getRoleName().name()));
+
         if (account.getRole().getPermissions() != null) {
             account.getRole().getPermissions().forEach(p ->
                     authorities.add(new SimpleGrantedAuthority(p.getName())));

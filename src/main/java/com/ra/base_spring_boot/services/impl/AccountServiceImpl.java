@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -137,7 +138,9 @@ public class AccountServiceImpl implements AccountService {
                     .build();
         } catch (BadCredentialsException e) {
             throw new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL, "password");
-        } catch (AuthenticationException e) {
+        } catch (LockedException e) {
+            throw new AppException(ErrorCode.ACCOUNT_LOCKED);
+        }catch (AuthenticationException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
     }
