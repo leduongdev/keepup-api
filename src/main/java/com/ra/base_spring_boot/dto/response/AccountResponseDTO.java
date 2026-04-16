@@ -1,6 +1,7 @@
 package com.ra.base_spring_boot.dto.response;
 
 import com.ra.base_spring_boot.model.enums.AccountStatus;
+import com.ra.base_spring_boot.model.enums.RoleName;
 import lombok.*;
 
 @NoArgsConstructor
@@ -14,5 +15,6 @@ public class AccountResponseDTO {
     private String email;
     private String avatarUrl;
     private String phone;
+    private RoleName roleName;
     private AccountStatus status;
 }

@@ -63,6 +63,6 @@ public class AccountPrincipal implements UserDetails {
     }
     public LocalDate getDateOfBirth() { return account.getProfile() != null ? account.getProfile().getDateOfBirth() : null; }
     public String getPhone() { return account.getProfile() != null ? account.getProfile().getPhone() : null; }
-
+    public RoleName getRole() { return account.getRole() != null ? account.getRole().getRoleName() : null; }
 
 }
