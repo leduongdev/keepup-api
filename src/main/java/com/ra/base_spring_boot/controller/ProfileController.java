@@ -1,6 +1,7 @@
 package com.ra.base_spring_boot.controller;
 
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.dto.request.PasswordChangeRequest;
 import com.ra.base_spring_boot.dto.request.UserProfileRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.dto.response.UserProfileResponseDTO;
@@ -54,6 +55,22 @@ public class ProfileController {
                 true,
                 "Update successfully!",
                 userProfileService.updateProfile(currentUser.getId(), profileRequest),
+                null,
+                LocalDateTime.now()
+        ));
+    }
+
+    @PatchMapping("/change-password")
+    @Operation(summary = "Change password")
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal AccountPrincipal currentUser,
+            @Valid @RequestBody PasswordChangeRequest passwordChangeRequest
+    ){
+        userProfileService.changePassword(currentUser.getId(), passwordChangeRequest);
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Change password successfully!",
+                null,
                 null,
                 LocalDateTime.now()
         ));
