@@ -84,6 +84,7 @@ public class AccountServiceImpl implements AccountService {
                 .profile(profile)
                 .authProvider(AuthProvider.LOCAL)
                 .status(AccountStatus.INACTIVE)
+                .isFirstLogin(false)
                 .isEmailVerified(false)
                 .build();
 

@@ -4,19 +4,19 @@ import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
 import com.ra.base_spring_boot.dto.request.UserCreateRequest;
 import com.ra.base_spring_boot.dto.response.AccountResponseDTO;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
-import com.ra.base_spring_boot.dto.response.page.PaginationDTO;
 import com.ra.base_spring_boot.dto.response.page.PaginationResponse;
+import com.ra.base_spring_boot.model.enums.AccountStatus;
 import com.ra.base_spring_boot.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -33,24 +33,11 @@ public class UserController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String direction) {
-        Page<AccountResponseDTO> userPage = userService.getStudentList(search, page - 1, size, sortBy, direction);
-
-        PaginationDTO paginationDTO = new PaginationDTO(
-            userPage.getNumber() + 1,
-            userPage.getSize(),
-            userPage.getTotalPages(),
-            userPage.getTotalElements()
-        );
-
-        PaginationResponse<AccountResponseDTO> responseData = new PaginationResponse<>(
-            userPage.getContent(),
-            paginationDTO
-        );
 
         ApiResponse<PaginationResponse<AccountResponseDTO>> apiResponse = new ApiResponse<>(
             true,
             "Get a list of successful users!",
-            responseData,
+            userService.getStudentList(search, page - 1, size, sortBy, direction),
             null,
             LocalDateTime.now()
         );
@@ -97,6 +84,23 @@ public class UserController {
         return ResponseEntity.ok(new ApiResponse<>(
                 true,
                 "Update status successfully!",
+                null,
+                null,
+                LocalDateTime.now()
+        ));
+    }
+
+    @PatchMapping("/bulk-status")
+    @Operation(summary = "Lock or unlock multiple accounts")
+    @PreAuthorize("hasAuthority('USER_WRITE_ALL')")
+    public ResponseEntity<?> updateUserBulkStatus(
+            @RequestParam List<Long> ids,
+            @RequestParam boolean status
+    ){
+        userService.updateBulkStatus(ids, status);
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Update successfully!",
                 null,
                 null,
                 LocalDateTime.now()
