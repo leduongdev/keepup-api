@@ -1,8 +1,10 @@
 package com.ra.base_spring_boot.services.impl;
 
+import com.ra.base_spring_boot.dto.request.PasswordChangeRequest;
 import com.ra.base_spring_boot.dto.request.UserProfileRequest;
 import com.ra.base_spring_boot.dto.response.UserProfileResponseDTO;
 import com.ra.base_spring_boot.exception.AppException;
+import com.ra.base_spring_boot.exception.BadRequestException;
 import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.UserProfile;
 import com.ra.base_spring_boot.model.enums.ErrorCode;
@@ -11,6 +13,7 @@ import com.ra.base_spring_boot.repository.UserProfileRepo;
 import com.ra.base_spring_boot.services.CloudinaryService;
 import com.ra.base_spring_boot.services.UserProfileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,6 +25,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     private final UserProfileRepo userProfileRepo;
     private final AccountRepo accountRepo;
     private final CloudinaryService cloudinaryService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserProfileResponseDTO getUserProfileById(Long id) {
@@ -60,6 +64,26 @@ public class UserProfileServiceImpl implements UserProfileService {
         UserProfile updatedProfile = userProfileRepo.save(profile);
         accountRepo.save(account);
         return convertToDTO(updatedProfile);
+    }
+
+    @Override
+    public void changePassword(Long id, PasswordChangeRequest request) {
+        Account account = accountRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Account with id " + id + " does not exist"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), account.getPasswordHash())) {
+            throw new BadRequestException("The old password is incorrect.!");
+        }
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("The new password and the password confirmation do not match!");
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), account.getPasswordHash())) {
+            throw new BadRequestException("The new password must not be the same as the old password!");
+        }
+
+        account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        accountRepo.save(account);
     }
 
     public UserProfileResponseDTO convertToDTO(UserProfile profile) {
