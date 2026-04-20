@@ -1,4 +1,4 @@
-package com.ra.base_spring_boot.services.impl;
+package com.ra.base_spring_boot.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-
     private final JavaMailSender javaMailSender;
 
     public void sendHtmlMail(String to, String subject, String content) throws MessagingException {

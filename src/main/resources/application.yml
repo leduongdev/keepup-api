@@ -1,3 +1,8 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
 spring:
   application:
     name: base_spring_boot
@@ -28,7 +33,9 @@ spring:
           auth: true
           starttls:
             enable: true
-
+  app:
+    server-url: http://localhost:8080
+    api-prefix: ${server.servlet.context-path}
 
 jwt:
   secret:

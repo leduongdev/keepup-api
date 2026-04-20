@@ -1,5 +1,6 @@
 package com.ra.base_spring_boot.services.impl;
 
+import com.ra.base_spring_boot.config.security.AppConfig;
 import com.ra.base_spring_boot.config.security.jwt.JwtTokenProvider;
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
@@ -13,6 +14,7 @@ import com.ra.base_spring_boot.model.enums.*;
 import com.ra.base_spring_boot.repository.AccountRepo;
 import com.ra.base_spring_boot.repository.RoleRepo;
 import com.ra.base_spring_boot.services.AccountService;
+import com.ra.base_spring_boot.services.EmailService;
 import com.ra.base_spring_boot.services.VerificationService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
+    private final AppConfig appConfig;
     private final AccountRepo accountRepo;
     private final RoleRepo roleRepo;
     private final AuthenticationManager authenticationManager;
@@ -41,13 +44,13 @@ public class AccountServiceImpl implements AccountService {
         boolean isExistUserName = accountRepo.existsByUserName(userRegisterRequest.getUserName());
 
         if (isExistUserName) {
-            throw new AppException(ErrorCode.USER_EXISTED);
+            throw new AppException(ErrorCode.USER_EXISTED, "userName");
         }
 
         boolean isExistEmail = accountRepo.existsByEmail(userRegisterRequest.getEmail());
 
         if (isExistEmail) {
-            throw new AppException(ErrorCode.EMAIL_EXISTED);
+            throw new AppException(ErrorCode.EMAIL_EXISTED, "email");
         }
 
         Role defaultRole = roleRepo.findByRoleName(RoleName.ROLE_STUDENT);
@@ -71,13 +74,10 @@ public class AccountServiceImpl implements AccountService {
                 .build();
 
         Account savedAccount = accountRepo.save(account);
-        // 3. Tạo Token xác thực lưu vào DB
         String token = verificationService.createVerificationToken(savedAccount, VerificationType.VERIFY_EMAIL);
 
-        // 4. Gửi Email xác thực
         try {
-            // Tạo link dẫn tới API xác thực của bạn
-            String verifyLink = "http://localhost:8080/api/v1/auth/verify-registration?token=" + token;
+            String verifyLink = appConfig.getFullApiUrl() + "/auth/verify-registration?token=" + token;
 
             String content = "<h3>Chào " + savedAccount.getUserName() + ",</h3>" +
                     "<p>Cảm ơn bạn đã đăng ký tài khoản tại Keep Up.</p>" +
@@ -123,7 +123,7 @@ public class AccountServiceImpl implements AccountService {
                     .refreshToken(refreshToken)
                     .build();
         } catch (BadCredentialsException e) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL);
+            throw new AppException(ErrorCode.INVALID_PASSWORD_OR_EMAIL, "password");
         } catch (AuthenticationException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }

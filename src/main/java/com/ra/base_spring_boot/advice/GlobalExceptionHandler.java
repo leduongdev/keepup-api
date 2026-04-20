@@ -1,6 +1,7 @@
 package com.ra.base_spring_boot.advice;
 
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.exception.BadRequestException;
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
         response.setSuccess(false);
         response.setMessage("Invalid data");
         response.setData(null);
-        response.setErrors(new ArrayList<>(errorList)); // cast đúng chuẩn
+        response.setErrors(new ArrayList<>(errorList));
         response.setTimestamp(LocalDateTime.now());
 
         return ResponseEntity.badRequest().body(response);
@@ -109,14 +110,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Object>> handleJsonError(HttpMessageNotReadableException ex) {
+        String errorMsg = "Malformed JSON or type mismatch";
+        String fieldName = "request_body";
+
+        Throwable cause = ex.getCause();
+        if (cause instanceof JsonMappingException jme) {
+            if (!jme.getPath().isEmpty()) {
+                fieldName = jme.getPath().get(0).getFieldName();
+            }
+
+            if (jme.getCause() instanceof IllegalArgumentException) {
+                errorMsg = jme.getCause().getMessage();
+            }
+        }
+
         ApiResponse<Object> res = new ApiResponse<>();
         res.setSuccess(false);
-        res.setMessage("Invalid request body");
-        res.setErrors(List.of(Map.of(
-                "message", "Malformed JSON or type mismatch"
-        )));
+        res.setMessage("Invalid data format");
         res.setTimestamp(LocalDateTime.now());
         res.setData(null);
+
+        res.setErrors(List.of(Map.of(
+                "field", fieldName,
+                "message", errorMsg
+        )));
 
         return ResponseEntity.badRequest().body(res);
     }
@@ -142,12 +159,20 @@ public class GlobalExceptionHandler {
         ApiResponse<Object> response = new ApiResponse<>();
         response.setSuccess(false);
         response.setMessage(errorCode.getMessage());
+        response.setTimestamp(LocalDateTime.now());
         response.setData(null);
 
-        response.setErrors(List.of(Map.of(
-                "message", errorCode.getMessage()
-        )));
-        response.setTimestamp(LocalDateTime.now());
+        List<Map<String, String>> errors = new ArrayList<>();
+        if (ex.getField() != null) {
+            errors.add(Map.of(
+                    "field", ex.getField(),
+                    "message", errorCode.getMessage()
+            ));
+        } else {
+            errors.add(Map.of("message", errorCode.getMessage()));
+        }
+
+        response.setErrors(errors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
