@@ -129,6 +129,7 @@ public class AccountServiceImpl implements AccountService {
                     .email(principal.getEmail())
                     .fullName(principal.getFullName())
                     .phone(principal.getPhone())
+                    .address(principal.getAddress())
                     .avatarUrl(principal.getAvatarUrl())
                     .gender(principal.isGender())
                     .dateOfBirth(principal.getDateOfBirth())

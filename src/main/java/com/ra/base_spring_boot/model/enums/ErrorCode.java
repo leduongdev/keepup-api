@@ -24,6 +24,7 @@ public enum ErrorCode {
     USER_EXISTED("Username already exists"),
     EMAIL_EXISTED("Email is already in use"),
     USER_NOT_EXISTED("User does not exist"),
+    PHONE_EXISTED("Phone number already exists"),
 
     // 4xxx: Resources
     DATA_NOT_FOUND("Requested data not found"),

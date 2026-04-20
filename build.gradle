@@ -49,8 +49,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // cloudinary
-    implementation("com.cloudinary:cloudinary-core:1.38.0")
-    implementation("com.cloudinary:cloudinary-http44:1.32.2")
+    implementation 'commons-fileupload:commons-fileupload:1.5'
+
+    implementation 'com.cloudinary:cloudinary-http44:1.36.0'
 
     // validate
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -60,6 +61,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     implementation 'it.ozimov:embedded-redis:0.7.2'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 }
 
 tasks.named('test') {

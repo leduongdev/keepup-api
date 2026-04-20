@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserProfileRepo extends JpaRepository<UserProfile, Long> {
+    boolean existsByPhoneAndIdNot(String phone, Long id);
 }

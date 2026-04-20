@@ -40,6 +40,11 @@ spring:
       host: localhost
       port: 6379
 
+cloudinary:
+  cloud_name: dtc7mun2h
+  api_key: 367326886449662
+  api_secret: drFhZL10Jmgt1ACgD6qnFvSLRYw
+
 jwt:
   secret:
     key: Ascmkkqdnmsdfrtgsyuhidj21ue120938219321ndsad
