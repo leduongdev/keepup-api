@@ -187,12 +187,12 @@ public class UserServiceImpl implements UserService {
         Account currentUser = SecurityUtils.getCurrentAccount();
 
         if (currentUser != null && ids.contains(currentUser.getId())) {
-            throw new BadRequestException("Bạn không thể tự khóa/mở khóa tài khoản của chính mình!");
+            throw new BadRequestException("You cannot lock/unlock your own account!");
         }
 
         List<Account> accountsToUpdate = userRepo.findAllByIdIn(ids);
         if (accountsToUpdate.isEmpty()) {
-            throw new NoSuchElementException("Không tìm thấy tài khoản nào phù hợp.");
+            throw new NoSuchElementException("No matching accounts were found.");
         }
 
         for (Account targetAccount : accountsToUpdate) {
@@ -200,16 +200,16 @@ public class UserServiceImpl implements UserService {
 
             if (SecurityUtils.hasRole("SUPER_ADMIN")) {
                 if (targetRole == RoleName.SUPER_ADMIN) {
-                    throw new AccessDeniedException("SUPER_ADMIN không thể tác động đến SUPER_ADMIN khác!");
+                    throw new AccessDeniedException("SUPER_ADMIN cannot influence other SUPER_ADMINs!");
                 }
             }
             else if (SecurityUtils.hasRole("ADMIN")) {
                 if (targetRole != RoleName.STUDENT) {
-                    throw new AccessDeniedException("ADMIN chỉ có quyền khóa/mở khóa tài khoản STUDENT!");
+                    throw new AccessDeniedException("The admin only has the authority to lock/unlock student accounts.!");
                 }
             }
             else {
-                throw new AccessDeniedException("Bạn không có quyền thực hiện chức năng này!");
+                throw new AccessDeniedException("You do not have permission to perform this function!");
             }
         }
 
