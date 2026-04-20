@@ -23,7 +23,8 @@ public enum ErrorCode {
 
     // 4xxx: Resources
     DATA_NOT_FOUND("Requested data not found"),
-    EMAIL_NOT_FOUND("Email not found");
+    EMAIL_NOT_FOUND("Email not found"),
+    USER_NOT_FOUND("User not found"),;
 
     private final String message;
 

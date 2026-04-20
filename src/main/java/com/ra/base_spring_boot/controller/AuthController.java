@@ -1,10 +1,12 @@
 package com.ra.base_spring_boot.controller;
 
+import com.ra.base_spring_boot.dto.request.NewPasswordRequest;
 import com.ra.base_spring_boot.dto.request.UserLoginRequest;
 import com.ra.base_spring_boot.dto.request.UserRegisterRequest;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.dto.response.JWTResponse;
 import com.ra.base_spring_boot.model.Account;
+import com.ra.base_spring_boot.model.enums.VerificationType;
 import com.ra.base_spring_boot.services.AccountService;
 import com.ra.base_spring_boot.services.VerificationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,6 +44,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> verifyRegistration(@RequestParam("token") String token) {
         verificationService.verifyEmail(token);
 
-        return ResponseEntity.ok(ApiResponse.success(null, "Tài khoản của bạn đã được kích hoạt thành công! Hãy đăng nhập để tiếp tục."));
+        return ResponseEntity.ok(ApiResponse.success(null, "Your account has been successfully activated! Please log in to continue."));
+    }
+
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Forgot Password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam String email) {
+        accountService.forgotPassword(email);
+        return ResponseEntity.ok(ApiResponse.success(null, "The password reset link has been sent to your email."));
     }
 }
