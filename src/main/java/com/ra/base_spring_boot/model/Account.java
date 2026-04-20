@@ -48,6 +48,9 @@ public class Account extends AuditableObject {
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified;
 
+    @Column(name = "is_first_login")
+    private Boolean isFirstLogin = true;
+
     @UpdateTimestamp
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;

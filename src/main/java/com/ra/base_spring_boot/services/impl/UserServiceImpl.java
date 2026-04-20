@@ -4,6 +4,8 @@ import com.ra.base_spring_boot.config.security.policy.UserPolicy;
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
 import com.ra.base_spring_boot.dto.request.UserCreateRequest;
 import com.ra.base_spring_boot.dto.response.AccountResponseDTO;
+import com.ra.base_spring_boot.dto.response.page.PaginationDTO;
+import com.ra.base_spring_boot.dto.response.page.PaginationResponse;
 import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.exception.BadRequestException;
 import com.ra.base_spring_boot.model.Account;
@@ -29,6 +31,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -41,18 +45,34 @@ public class UserServiceImpl implements UserService {
     private final UserPolicy userPolicy;
 
     @Override
-    public Page<AccountResponseDTO> getStudentList(String search, int page, int size, String sortBy, String direction) {
+    public PaginationResponse<AccountResponseDTO> getStudentList(String search, int page, int size, String sortBy, String direction) {
         Account currentUser = SecurityUtils.getCurrentAccount();
 
         Specification<Account> spec = userPolicy.getUsersFilter(currentUser, search);
 
-        if (SecurityUtils.hasRole("ADMIN") && !SecurityUtils.hasRole("SUPER_ADMIN")) {
+        spec = spec.and((root, query, cb) -> cb.notEqual(root.get("id"), currentUser != null ? currentUser.getId() : null));
+
+        if (SecurityUtils.hasRole("SUPER_ADMIN")) {
+            spec = spec.and(UserSpecs.hasRoleIn(Arrays.asList(RoleName.ADMIN, RoleName.STUDENT)));
+        }
+        else if (SecurityUtils.hasRole("ADMIN")) {
             spec = spec.and(UserSpecs.hasRole("STUDENT"));
         }
 
         Pageable pageable = PageRequest.of(page, size, getSort(sortBy, direction));
+        Page<Account> userPage = userRepo.findAll(spec, pageable);
 
-        return userRepo.findAll(spec, pageable).map(this::convertToDTO);
+        List<AccountResponseDTO> content = userPage.getContent().stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        PaginationDTO paginationDTO = new PaginationDTO(
+            userPage.getNumber() + 1,
+            userPage.getSize(),
+            userPage.getTotalPages(),
+            userPage.getTotalElements()
+        );
+        return new PaginationResponse<>(content, paginationDTO);
     }
 
     @Override
@@ -121,8 +141,9 @@ public class UserServiceImpl implements UserService {
                 .role(defaultRole)
                 .profile(profile)
                 .authProvider(AuthProvider.LOCAL)
-                .status(AccountStatus.INACTIVE)
-                .isEmailVerified(false)
+                .status(AccountStatus.ACTIVE)
+                .isFirstLogin(true)
+                .isEmailVerified(true)
                 .build();
 
         Account savedAccount = accountRepo.save(account);
@@ -132,10 +153,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateStatus(Long id, AccountPrincipal principal) {
         Account targetAccount = accountRepo.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy người dùng"));
+                .orElseThrow(() -> new NoSuchElementException("User not found!"));
 
         if (principal.getId().equals(id)) {
-            throw new BadRequestException("Bạn không được phép tự thay đổi trạng thái tài khoản của chính mình!");
+            throw new BadRequestException("You are not allowed to change your own account status!");
         }
 
         RoleName currentRole = principal.getAccount().getRole().getRoleName();
@@ -143,16 +164,13 @@ public class UserServiceImpl implements UserService {
 
         if (targetRole == RoleName.SUPER_ADMIN) {
             if (principal.getId().equals(id)) {
-                throw new BadRequestException("Super Admin không được phép tự khóa tài khoản của chính mình!");
-            }
-            if (currentRole != RoleName.SUPER_ADMIN) {
-                throw new AccessDeniedException("Chỉ Super Admin mới có quyền tác động đến tài khoản Super Admin khác!");
+                throw new BadRequestException("Super Admins are not allowed to lock their own accounts.!");
             }
         }
 
         if (currentRole == RoleName.ADMIN) {
             if (targetRole != RoleName.STUDENT) {
-                throw new AccessDeniedException("Admin chỉ có quyền cập nhật trạng thái cho Sinh viên!");
+                throw new AccessDeniedException("Admins only have the right to update the status for students!");
             }
         }
 
@@ -162,6 +180,41 @@ public class UserServiceImpl implements UserService {
 
         targetAccount.setStatus(newStatus);
         accountRepo.save(targetAccount);
+    }
+
+    @Override
+    public void updateBulkStatus(List<Long> ids, boolean status) {
+        Account currentUser = SecurityUtils.getCurrentAccount();
+
+        if (currentUser != null && ids.contains(currentUser.getId())) {
+            throw new BadRequestException("You cannot lock/unlock your own account!");
+        }
+
+        List<Account> accountsToUpdate = userRepo.findAllByIdIn(ids);
+        if (accountsToUpdate.isEmpty()) {
+            throw new NoSuchElementException("No matching accounts were found.");
+        }
+
+        for (Account targetAccount : accountsToUpdate) {
+            RoleName targetRole = targetAccount.getRole().getRoleName();
+
+            if (SecurityUtils.hasRole("SUPER_ADMIN")) {
+                if (targetRole == RoleName.SUPER_ADMIN) {
+                    throw new AccessDeniedException("SUPER_ADMIN cannot influence other SUPER_ADMINs!");
+                }
+            }
+            else if (SecurityUtils.hasRole("ADMIN")) {
+                if (targetRole != RoleName.STUDENT) {
+                    throw new AccessDeniedException("The admin only has the authority to lock/unlock student accounts.!");
+                }
+            }
+            else {
+                throw new AccessDeniedException("You do not have permission to perform this function!");
+            }
+        }
+
+        AccountStatus newStatus = status ? AccountStatus.ACTIVE : AccountStatus.LOCKED;
+        userRepo.updateStatusByIds(ids, newStatus);
     }
 
     private AccountResponseDTO convertToDTO(Account account) {
@@ -177,15 +230,12 @@ public class UserServiceImpl implements UserService {
     }
 
     private Sort getSort(String sortBy, String direction) {
-        // 1. Kiểm tra nếu không có sortBy thì trả về mặc định (ví dụ theo ID giảm dần)
         if (sortBy == null || sortBy.isEmpty()) {
             return Sort.by("id").descending();
         }
 
-        // 2. Xử lý logic mapping tên trường (ví dụ từ DTO sang Entity)
         String property = sortBy.equals("fullName") ? "profile.fullName" : sortBy;
 
-        // 3. Trả về đối tượng Sort
         return direction.equalsIgnoreCase("desc") ?
                 Sort.by(property).descending() : Sort.by(property).ascending();
     }

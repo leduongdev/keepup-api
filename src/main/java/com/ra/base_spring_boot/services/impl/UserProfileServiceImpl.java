@@ -12,6 +12,7 @@ import com.ra.base_spring_boot.repository.AccountRepo;
 import com.ra.base_spring_boot.repository.UserProfileRepo;
 import com.ra.base_spring_boot.services.CloudinaryService;
 import com.ra.base_spring_boot.services.UserProfileService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -67,6 +68,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     }
 
     @Override
+    @Transactional
     public void changePassword(Long id, PasswordChangeRequest request) {
         Account account = accountRepo.findById(id).orElseThrow(() -> new NoSuchElementException("Account with id " + id + " does not exist"));
 
@@ -83,6 +85,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
 
         account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        account.setIsFirstLogin(false);
         accountRepo.save(account);
     }
 
