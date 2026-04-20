@@ -1,6 +1,9 @@
 package com.ra.base_spring_boot.repository;
 
 import com.ra.base_spring_boot.model.Account;
+import com.ra.base_spring_boot.model.enums.RoleName;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +23,5 @@ public interface AccountRepo extends JpaRepository<Account,Long> {
     boolean existsByUserName(String userName);
     boolean existsByEmail(String email);
     Optional<Account> findByEmail(String email);
+    long countByRole_RoleName(RoleName roleName);
 }

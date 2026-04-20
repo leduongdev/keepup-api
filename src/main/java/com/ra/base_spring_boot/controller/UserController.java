@@ -1,15 +1,19 @@
 package com.ra.base_spring_boot.controller;
 
+import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.dto.request.UserCreateRequest;
 import com.ra.base_spring_boot.dto.response.AccountResponseDTO;
 import com.ra.base_spring_boot.dto.response.ApiResponse;
 import com.ra.base_spring_boot.dto.response.page.PaginationDTO;
 import com.ra.base_spring_boot.dto.response.page.PaginationResponse;
 import com.ra.base_spring_boot.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -61,6 +65,22 @@ public class UserController {
                 true,
                 "Retrieve successful user details!",
                 userService.getStudentById(id),
+                null,
+                LocalDateTime.now()
+        ));
+    }
+
+    @PostMapping
+    @Operation(summary = "Create User")
+    @PreAuthorize("hasAnyAuthority('USER_CREATE', 'ADMIN_CREATE')")
+    public ResponseEntity<ApiResponse<AccountResponseDTO>> createUser(
+            @Valid @RequestBody UserCreateRequest request,
+            @AuthenticationPrincipal AccountPrincipal currentUser
+    ){
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Create account successfully!",
+                userService.addUser(request, currentUser),
                 null,
                 LocalDateTime.now()
         ));

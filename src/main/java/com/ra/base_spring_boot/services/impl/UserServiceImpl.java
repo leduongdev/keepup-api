@@ -1,8 +1,19 @@
 package com.ra.base_spring_boot.services.impl;
 
 import com.ra.base_spring_boot.config.security.policy.UserPolicy;
+import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.dto.request.UserCreateRequest;
 import com.ra.base_spring_boot.dto.response.AccountResponseDTO;
+import com.ra.base_spring_boot.exception.AppException;
 import com.ra.base_spring_boot.model.Account;
+import com.ra.base_spring_boot.model.Role;
+import com.ra.base_spring_boot.model.UserProfile;
+import com.ra.base_spring_boot.model.enums.AccountStatus;
+import com.ra.base_spring_boot.model.enums.AuthProvider;
+import com.ra.base_spring_boot.model.enums.ErrorCode;
+import com.ra.base_spring_boot.model.enums.RoleName;
+import com.ra.base_spring_boot.repository.AccountRepo;
+import com.ra.base_spring_boot.repository.RoleRepo;
 import com.ra.base_spring_boot.repository.UserRepo;
 import com.ra.base_spring_boot.repository.specifications.UserSpecs;
 import com.ra.base_spring_boot.services.UserService;
@@ -14,13 +25,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private final PasswordEncoder passwordEncoder;
+    private final AccountRepo accountRepo;
+    private final RoleRepo roleRepo;
     private final UserRepo userRepo;
     private final UserPolicy userPolicy;
 
@@ -56,6 +69,65 @@ public class UserServiceImpl implements UserService {
         return convertToDTO(targetUser);
     }
 
+    @Override
+    public AccountResponseDTO addUser(UserCreateRequest request, AccountPrincipal principal) {
+        String roleToCreate = String.valueOf(request.getRoleName());
+
+        if (roleToCreate.equals("SUPER_ADMIN")) {
+            long superAdminCount = accountRepo.countByRole_RoleName(RoleName.SUPER_ADMIN);
+            if (superAdminCount >= 1) {
+                throw new AccessDeniedException("The system already has a Super Admin. It's not possible to create another one!");
+            }
+        }
+
+        if (roleToCreate.equals("ADMIN") || roleToCreate.equals("SUPER_ADMIN")) {
+            if (principal.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ADMIN_CREATE"))) {
+                throw new AccessDeniedException("You do not have permission to create an Administrator account!");
+            }
+        }
+
+        if (principal.getAccount().getRole().getRoleName() == RoleName.ADMIN) {
+            if (!roleToCreate.equals("STUDENT")) {
+                throw new AccessDeniedException("Admins can only create student accounts!");
+            }
+        }
+
+        boolean isExistUserName = accountRepo.existsByUserName(request.getUserName());
+
+        if (isExistUserName) {
+            throw new AppException(ErrorCode.USER_EXISTED, "userName");
+        }
+
+        boolean isExistEmail = accountRepo.existsByEmail(request.getEmail());
+
+        if (isExistEmail) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED, "email");
+        }
+
+        Role defaultRole = roleRepo.findByRoleName(request.getRoleName());
+
+        UserProfile profile = UserProfile.builder()
+                .fullName(request.getFullName())
+                .avatarUrl("https://i.pinimg.com/236x/5e/e0/82/5ee082781b8c41406a2a50a0f32d6aa6.jpg")
+                .gender(request.getGender())
+                .dateOfBirth(request.getDateOfBirth())
+                .build();
+
+        Account account = Account.builder()
+                .userName(request.getUserName())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .role(defaultRole)
+                .profile(profile)
+                .authProvider(AuthProvider.LOCAL)
+                .status(AccountStatus.INACTIVE)
+                .isEmailVerified(false)
+                .build();
+
+        Account savedAccount = accountRepo.save(account);
+        return convertToDTO(savedAccount);
+    }
+
     private AccountResponseDTO convertToDTO(Account account) {
         return AccountResponseDTO.builder()
                 .id(account.getId())
@@ -63,6 +135,7 @@ public class UserServiceImpl implements UserService {
                 .fullName(account.getProfile().getFullName())
                 .avatarUrl(account.getProfile().getAvatarUrl())
                 .phone(account.getProfile().getPhone())
+                .roleName(account.getRole().getRoleName())
                 .status(account.getStatus())
                 .build();
     }
