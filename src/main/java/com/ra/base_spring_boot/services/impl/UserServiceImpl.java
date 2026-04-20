@@ -5,6 +5,7 @@ import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
 import com.ra.base_spring_boot.dto.request.UserCreateRequest;
 import com.ra.base_spring_boot.dto.response.AccountResponseDTO;
 import com.ra.base_spring_boot.exception.AppException;
+import com.ra.base_spring_boot.exception.BadRequestException;
 import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.Role;
 import com.ra.base_spring_boot.model.UserProfile;
@@ -27,6 +28,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -54,11 +57,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public AccountResponseDTO getStudentById(Long id) {
-        // 1. Tìm user trong DB
         Account targetUser = userRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found!"));
 
-        // 2. Lấy user đang đăng nhập
         Account currentUser = SecurityUtils.getCurrentAccount();
 
         // 3. PBAC: Hỏi Policy xem có được xem ông này không?
@@ -126,6 +127,41 @@ public class UserServiceImpl implements UserService {
 
         Account savedAccount = accountRepo.save(account);
         return convertToDTO(savedAccount);
+    }
+
+    @Override
+    public void updateStatus(Long id, AccountPrincipal principal) {
+        Account targetAccount = accountRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy người dùng"));
+
+        if (principal.getId().equals(id)) {
+            throw new BadRequestException("Bạn không được phép tự thay đổi trạng thái tài khoản của chính mình!");
+        }
+
+        RoleName currentRole = principal.getAccount().getRole().getRoleName();
+        RoleName targetRole = targetAccount.getRole().getRoleName();
+
+        if (targetRole == RoleName.SUPER_ADMIN) {
+            if (principal.getId().equals(id)) {
+                throw new BadRequestException("Super Admin không được phép tự khóa tài khoản của chính mình!");
+            }
+            if (currentRole != RoleName.SUPER_ADMIN) {
+                throw new AccessDeniedException("Chỉ Super Admin mới có quyền tác động đến tài khoản Super Admin khác!");
+            }
+        }
+
+        if (currentRole == RoleName.ADMIN) {
+            if (targetRole != RoleName.STUDENT) {
+                throw new AccessDeniedException("Admin chỉ có quyền cập nhật trạng thái cho Sinh viên!");
+            }
+        }
+
+        AccountStatus newStatus = (targetAccount.getStatus() == AccountStatus.ACTIVE)
+                ? AccountStatus.LOCKED
+                : AccountStatus.ACTIVE;
+
+        targetAccount.setStatus(newStatus);
+        accountRepo.save(targetAccount);
     }
 
     private AccountResponseDTO convertToDTO(Account account) {

@@ -85,4 +85,21 @@ public class UserController {
                 LocalDateTime.now()
         ));
     }
+
+    @PatchMapping("/{id}/status")
+    @Operation(summary = "Update status")
+    @PreAuthorize("hasAuthority('ADMIN_LOCKED')")
+    public ResponseEntity<?> updateUserStatus(
+            @PathVariable Long id,
+            @AuthenticationPrincipal AccountPrincipal principal
+    ){
+        userService.updateStatus(id, principal);
+        return ResponseEntity.ok(new ApiResponse<>(
+                true,
+                "Update status successfully!",
+                null,
+                null,
+                LocalDateTime.now()
+        ));
+    }
 }

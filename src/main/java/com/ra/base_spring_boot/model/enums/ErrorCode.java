@@ -14,6 +14,7 @@ public enum ErrorCode {
     TOKEN_ALREADY_USED("Token already used!"),
     TOKEN_EXPIRED("Token expired!"),
     CANNOT_SEND_EMAIL("Cannot send email!"),
+    ACCOUNT_LOCKED("Account locked!"),
 
     // 2xxx: Validation (Regex, NotBlank, etc.)
     INVALID_KEY("Invalid message key"),
