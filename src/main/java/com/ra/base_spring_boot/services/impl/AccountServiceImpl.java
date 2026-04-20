@@ -66,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
             throw new AppException(ErrorCode.EMAIL_EXISTED, "email");
         }
 
-        Role defaultRole = roleRepo.findByRoleName(RoleName.ROLE_STUDENT);
+        Role defaultRole = roleRepo.findByRoleName(RoleName.STUDENT);
 
         UserProfile profile = UserProfile.builder()
                 .fullName(userRegisterRequest.getFullName())

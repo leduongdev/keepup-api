@@ -13,19 +13,24 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Getter
-@RequiredArgsConstructor
 public class AccountPrincipal implements UserDetails {
 
     private final Account account;
+    private final Collection<? extends GrantedAuthority> authorities;
+
+    public AccountPrincipal(Account account, Collection<? extends GrantedAuthority> authorities) {
+        this.account = account;
+        this.authorities = authorities;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (account.getRole() == null || account.getRole().getRoleName() == null) return List.of();
-        return List.of(new SimpleGrantedAuthority(account.getRole().getRoleName().name()));
+        return this.authorities;
     }
 
     @Override
@@ -44,13 +49,6 @@ public class AccountPrincipal implements UserDetails {
         return account.getStatus() == AccountStatus.ACTIVE;
     }
 
-    public boolean hasRole(RoleName role) {
-        return getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals(role.name()));
-    }
-
-
-
     @Override
     public boolean isEnabled() {
         return account.getStatus() == AccountStatus.ACTIVE;
@@ -65,4 +63,6 @@ public class AccountPrincipal implements UserDetails {
     }
     public LocalDate getDateOfBirth() { return account.getProfile() != null ? account.getProfile().getDateOfBirth() : null; }
     public String getPhone() { return account.getProfile() != null ? account.getProfile().getPhone() : null; }
+
+
 }

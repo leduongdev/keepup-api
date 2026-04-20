@@ -13,7 +13,8 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Getter
+@Setter
 public class UserProfile extends BaseObject {
 
     @Column(name = "full_name", nullable = false, length = 100)

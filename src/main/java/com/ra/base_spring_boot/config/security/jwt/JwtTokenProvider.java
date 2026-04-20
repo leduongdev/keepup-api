@@ -2,6 +2,7 @@ package com.ra.base_spring_boot.config.security.jwt;
 
 
 import com.ra.base_spring_boot.config.security.principle.AccountPrincipal;
+import com.ra.base_spring_boot.repository.AccountRepo;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -24,22 +25,18 @@ public class JwtTokenProvider {
     @Value("${jwt.expired.refresh}")
     private long refreshMs;
 
-    // Chuyển chuỗi Secret thành Key chuẩn để ký
     private Key key() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    // 1. Hàm tạo Access Token (Dùng expirationMs)
     public String generateAccessToken(AccountPrincipal principal) {
         return generateToken(principal, expirationMs);
     }
 
-    // 2. Hàm tạo Refresh Token (Dùng refreshMs)
     public String generateRefreshToken(AccountPrincipal principal) {
         return generateToken(principal, refreshMs);
     }
 
-    // Hàm tạo Token dùng chung (Nhận vào thời gian hết hạn)
     private String generateToken(AccountPrincipal principal, long expiryTime) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + expiryTime);
@@ -82,7 +79,6 @@ public class JwtTokenProvider {
         return false;
     }
 
-    // Lấy ngày hết hạn để lưu vào BlacklistToken nếu cần
     public Date getExpiryDateFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key())
