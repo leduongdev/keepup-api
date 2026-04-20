@@ -1,5 +1,8 @@
 package com.ra.base_spring_boot.model.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
     // 9xxx: System
     UNCATEGORIZED_EXCEPTION("Uncategorized system error"),
@@ -32,5 +35,4 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    public String getMessage() { return message; }
 }

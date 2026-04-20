@@ -35,6 +35,10 @@ spring:
             enable: true
   app:
     server-url: http://localhost:8080
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 jwt:
   secret:

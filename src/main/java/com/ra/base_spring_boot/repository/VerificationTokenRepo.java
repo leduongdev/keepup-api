@@ -20,4 +20,6 @@ public interface VerificationTokenRepo extends JpaRepository<VerificationToken,L
             @Param("token") String token,
             @Param("type") VerificationType type
     );
+
+    void deleteByTokenAndType(String token, VerificationType type);
 }

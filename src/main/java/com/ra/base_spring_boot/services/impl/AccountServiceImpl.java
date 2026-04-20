@@ -12,15 +12,19 @@ import com.ra.base_spring_boot.model.Account;
 import com.ra.base_spring_boot.model.Role;
 import com.ra.base_spring_boot.model.UserProfile;
 import com.ra.base_spring_boot.model.VerificationToken;
+import com.ra.base_spring_boot.model.auth.BlacklistToken;
 import com.ra.base_spring_boot.model.enums.*;
 import com.ra.base_spring_boot.repository.AccountRepo;
+import com.ra.base_spring_boot.repository.BlacklistTokenRepo;
 import com.ra.base_spring_boot.repository.RoleRepo;
 import com.ra.base_spring_boot.repository.VerificationTokenRepo;
 import com.ra.base_spring_boot.services.AccountService;
 import com.ra.base_spring_boot.services.EmailService;
 import com.ra.base_spring_boot.services.VerificationService;
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +35,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +49,8 @@ public class AccountServiceImpl implements AccountService {
     private final EmailService emailService;
     private final VerificationService verificationService;
     private final VerificationTokenRepo verificationTokenRepo;
+    private final BlacklistTokenRepo blacklistTokenRepo;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public Account register(UserRegisterRequest userRegisterRequest) {
@@ -164,5 +171,27 @@ public class AccountServiceImpl implements AccountService {
 
         verificationToken.setConsumedAt(LocalDateTime.now());
         verificationTokenRepo.save(verificationToken);
+    }
+
+    @Override
+    @Transactional
+    public void logout(String accessToken, String refreshToken) {
+        verificationTokenRepo.deleteByTokenAndType(refreshToken, VerificationType.REFRESH_TOKEN);
+
+        long remainingTime = jwtTokenProvider.getRemainingTime(accessToken);
+
+        if (remainingTime > 0) {
+            redisTemplate.opsForValue().set(
+                    accessToken,
+                    "blacklisted",
+                    remainingTime,
+                    TimeUnit.MILLISECONDS
+            );
+        }
+
+        BlacklistToken blToken = new BlacklistToken();
+        blToken.setToken(accessToken);
+        blToken.setExpiredDate(jwtTokenProvider.getExpiryDateFromToken(accessToken));
+        blacklistTokenRepo.save(blToken);
     }
 }
